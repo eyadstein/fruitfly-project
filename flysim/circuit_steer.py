@@ -1,4 +1,4 @@
-"""Steering signal computed through the real PN to KC wiring."""
+"""Steering signal through the real PN to KC wiring, with sparse KC coding."""
 from pathlib import Path
 import numpy as np
 from odour_steer import antenna_positions, concentration
@@ -7,14 +7,17 @@ _d = np.load(Path(__file__).resolve().parents[1] / "connectome" / "pn_kc_matrix.
 W = _d["W"].astype(np.float64)
 
 ODOUR = np.random.default_rng(0).random(W.shape[1])
-C_REF = 0.02
+C_REF = 0.2
 THETA = np.percentile(W @ (C_REF * ODOUR), 50)
+K = int(0.05 * W.shape[0])
 EPS = 1e-9
 
 
 def kc_total(conc):
-    """Total KC activity for one antenna at a given concentration."""
-    return np.maximum(W @ (conc * ODOUR) - THETA, 0.0).sum()
+    """Total activity of the K most driven KCs above threshold."""
+    drive = W @ (conc * ODOUR) - THETA
+    top = np.partition(drive, -K)[-K:]
+    return np.maximum(top, 0.0).sum()
 
 
 def circuit_error(pos, heading, source):
