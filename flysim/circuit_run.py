@@ -19,7 +19,7 @@ from flygym_demo.complex_terrain import (
 )
 
 SIGN = 1.0          # flip to -1.0 if the fly turns away from the target
-BASE, GAIN = 0.8, 10.0
+BASE, GAIN = 0.8, 3.0
 RUN_TIME = 4.0
 WINDOW = 500        # steps used to estimate heading from movement
 

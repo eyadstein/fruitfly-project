@@ -30,3 +30,20 @@ Built a PN -> Kenyon cell projection from the real connectome (142 PNs, 2,376 KC
 - recall@10 vs exact cosine (5 seeds): real wiring and a degree-preserving shuffle are tied in every setting; random wiring with matched KC in-degree is better by ~0.05-0.12 at wta 0.05-0.10.
 - Interpretation: the specific PN->KC pairing does not matter on this data; the uneven PN fan-out costs recall. Real data and recall-vs-discrimination tasks are untested.
 - Caveats: synthetic inputs, each PN treated as an independent dimension, filtered connection table.
+
+## Steering experiment (NeuroMechFly 2.1.0, hybrid turning controller)
+
+A simulated fly walks toward an odour source, steering from a left/right antenna signal. Controllers compared: plain odour difference, and a sparse PN->Kenyon-cell circuit built from the FlyWire wiring (threshold + top-5% winner-take-all as an APL stand-in), with real and degree-preserving shuffled wiring.
+
+6 target angles x 3 seeds per controller, target 12.8 mm away, arrival = within 3 mm:
+
+| Controller | Arrived | Median time | Mean closest |
+|---|---|---|---|
+| Plain odour (gain 3.8) | 10/18 | 1.04 s | 3.5 mm |
+| Circuit, real wiring (gain 3.0) | 12/18 | 1.06 s | 3.1 mm |
+| Circuit, shuffled wiring (gain 3.0) | 12/18 | 1.07 s | 3.2 mm |
+
+- Real and shuffled wiring perform identically; the circuit acts as a gain/nonlinearity stage, not a wiring-specific one.
+- With a single odour every channel scales with the same concentration, so PN identity cannot matter here.
+- The plain-vs-circuit gap (2 trials of 18) is within chance and confounded by different gains.
+- Untested: two odours with different PN patterns, where a KC code could discriminate and a plain concentration signal cannot.
