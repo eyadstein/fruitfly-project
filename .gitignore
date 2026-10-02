@@ -3,3 +3,5 @@ __pycache__
 .pytest_cache
 connectome/data/
 connectome/data/
+.venv-fly/
+flysim/output/
