@@ -5,3 +5,19 @@ FlyHash similarity search + Fruit Fly Optimization Algorithm, served with FastAP
 ## Run
     python -m pytest -q
     uvicorn app:app --reload
+
+## Results
+
+Recall@10 against exact cosine search (1,000 random 128-d vectors, noisy held-out queries, 3 seeds):
+
+| Setting | recall@10 | ms/query |
+|---|---|---|
+| Default (expansion 20, wta 0.05, sample 0.10) | 0.345 | 4.3 |
+| Random search, 96 evaluations | 0.650 +/- 0.026 | 13.4 |
+| FOA, 8 flies x 12 iterations | 0.667 +/- 0.028 | 15.2 |
+
+- Tuning nearly doubles recall over the defaults.
+- FOA and random search are statistically tied on this 3-parameter problem.
+- Best settings sit at the search bounds (expansion ~75-80, wta 0.10, sample_frac ~0.28-0.30), so recall is limited by code size, at the cost of ~3.5x query time.
+- Relaxing sparsity (wta ~0.30) reached 0.758, so the sparse cap costs about 0.09 recall.
+- Caveat: random Gaussian data is a hard, unrealistic test; real embeddings are the next step.
