@@ -61,3 +61,21 @@ Odour A (rewarded, 12.8 mm) and odour B (distractor, 8.0 mm, closer, opposite si
 - A sparse KC code with a readout discriminates odours that a plain concentration signal cannot.
 - Real and shuffled wiring are indistinguishable (11 vs 12 of 12): the discrimination comes from sparse expansion and winner-take-all, not the specific PN->KC pairing. This matches the FlyHash recall benchmark and the single-odour steering result.
 - Caveats: the readout is set directly from the two odours (no learning), one odour pair, 12 trials per controller.
+
+## FlyHash on real text (20 Newsgroups, TF-IDF + SVD to 142 dimensions)
+
+3,000 indexed documents, 150 queries per seed, 3 seeds, k=10. Precision = fraction of the 10 retrieved documents from the query's own newsgroup (chance 0.05).
+
+| Method | Recall vs exact cosine | Same-newsgroup precision |
+|---|---|---|
+| Exact cosine | 1.000 | 0.399 |
+| FlyHash default (exp 20, wta 0.05, sf 0.10) | 0.521 | 0.316 |
+| FlyHash tuned (exp 75, wta 0.10, sf 0.28) | 0.826 | 0.395 |
+| Real PN->KC wiring, wta 0.05 / 0.10 | 0.320 / 0.328 | 0.260 / 0.277 |
+| Shuffled wiring, wta 0.05 / 0.10 | 0.333 / 0.335 | 0.270 / 0.277 |
+| Random in-degree, wta 0.05 / 0.10 | 0.390 / 0.542 | 0.304 / 0.354 |
+
+- Tuned FlyHash matches exact cosine on same-newsgroup precision (0.395 vs 0.399), so tuning on random data transferred to text.
+- Tuned FlyHash uses 10,650 cells per document (~1.3 KB as bits vs 568 bytes for the raw vector), so there is no storage saving at these settings.
+- Real wiring ties a degree-preserving shuffle; evenly spread random wiring is better, increasingly so at higher sparsity, consistent with the uneven PN fan-out.
+- Caveats: classic TF-IDF vectors rather than neural embeddings; the real circuit sees ~4.5 inputs per KC.
