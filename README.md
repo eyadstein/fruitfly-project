@@ -47,3 +47,17 @@ A simulated fly walks toward an odour source, steering from a left/right antenna
 - With a single odour every channel scales with the same concentration, so PN identity cannot matter here.
 - The plain-vs-circuit gap (2 trials of 18) is within chance and confounded by different gains.
 - Untested: two odours with different PN patterns, where a KC code could discriminate and a plain concentration signal cannot.
+
+## Two-odour discrimination (steering toward A, away from a closer distractor B)
+
+Odour A (rewarded, 12.8 mm) and odour B (distractor, 8.0 mm, closer, opposite side) with nearly uncorrelated PN patterns (r = -0.04, ~93 KCs active each). The circuit uses a readout set from the two odours' KC codes (+1 on A's cells, -1 on B's). 4 angles x 3 seeds per controller:
+
+| Controller | Reached A | Reached B | Neither | Median time to A |
+|---|---|---|---|---|
+| Plain concentration | 0 | 3 | 9 | - |
+| Circuit, real wiring + readout | 11 | 0 | 1 | 1.04 s |
+| Circuit, shuffled wiring + readout | 12 | 0 | 0 | 1.06 s |
+
+- A sparse KC code with a readout discriminates odours that a plain concentration signal cannot.
+- Real and shuffled wiring are indistinguishable (11 vs 12 of 12): the discrimination comes from sparse expansion and winner-take-all, not the specific PN->KC pairing. This matches the FlyHash recall benchmark and the single-odour steering result.
+- Caveats: the readout is set directly from the two odours (no learning), one odour pair, 12 trials per controller.
