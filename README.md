@@ -136,15 +136,27 @@ Walking in the arena (A rewarded odour at 12.8 mm, B at 8.0 mm, closer and on th
 
 ## Online learning: learning from experience, then a contingency flip
 
-A naive fly walks 32 trials in the two-odour arena (A at 12.8 mm, B at 8.0 mm, closer and on the opposite side; random target angle each trial). KC-to-MBON weights carry over between trials. Coming within 6 mm of a source triggers the signal (a design choice that lets near passes teach her): in trials 1-16 A is rewarded and B punished, in trials 17-32 the contingency is flipped. Depressed synapses recover 10% per trial. A no-learning control runs the same trial sequence with fixed weights.
+A naive fly walks 32 trials in the two-odour arena (A at 12.8 mm, B at 8.0 mm, closer and on the opposite side; random target angle each trial). KC-to-MBON weights carry over between trials. Coming within 6 mm of a source triggers the signal (my design choice, so near passes teach her): in trials 1-16 A is rewarded and B punished, in trials 17-32 the contingency is flipped. Depressed synapses recover 10% per trial. A no-learning control runs the same trial sequence with fixed weights.
+
+Run 1 (no exploration noise):
+
+| Trials | Learning: A / B / neither | Control: A / B / neither |
+|---|---|---|
+| 1-16 | 15 / 0 / 1 | 0 / 0 / 16 |
+| 17-32 | 2 / 1 / 13 | 0 / 0 / 16 |
+
+After the flip she stopped going to A but barely relearned B, and the control never reached a source. I suspected a stall: with near-zero drive she wanders without visiting a source, so no reinforcement arrives.
+
+Run 2 (exploration noise added after run 1, so a post-hoc change; the figure shows this run, and run 1's plot was not kept):
 
 | Trials | Learning: A / B / neither | Mean valence A, B | Control: A / B / neither |
 |---|---|---|---|
-| 1-16 | 15 / 0 / 1 | A +0.36 to +0.81, B -0.36 to -0.55 | 0 / 0 / 16 |
-| 17-32 | 2 / 1 / 13 | A +0.34 to +0.13, B -0.48 to +0.23 | 0 / 0 / 16 |
+| 1-16 | 14 / 0 / 2 | A +0.48 to +0.82, B -0.23 to -0.53 | 3 / 5 / 8 |
+| 17-32 | 4 / 3 / 9 | A +0.41 to +0.05, B -0.48 to +0.42 | 4 / 1 / 11 |
 
-![Online learning and contingency flip](figures/online_learning.png)
+![Online learning and contingency flip (run 2)](figures/online_learning.png)
 
-- She learns from experience: 15 of 16 arrivals at the rewarded odour (past the closer one), against 0 of 16 for the control.
-- After the flip she stops going to A within a block but relearns B only slowly (1 arrival in 16 trials). Likely cause (untested at this point): with near-zero drive she wanders without visiting a source, so no reinforcement arrives.
-- Caveats: 6 mm reinforcement radius chosen by me, random approach/avoid assignment of MBONs, one odour pair, one trial sequence, 10% recovery rate chosen after an earlier weak reversal.
+- She learns from experience: 14 of 16 arrivals at the rewarded odour, passing the closer one, against 3 of 16 for the control (chance level for A is about 19%).
+- After the flip she unlearns A within about 8 trials, and B's valence turns positive around trial 25. She reaches B in 3 of the last 4 trials, but the run ends just as relearning starts, so reversal is incomplete. Reversal is slower than acquisition (about 12 trials against about 4).
+- The stall explanation is only partly supported (4 of 4 time-outs when both valences were near zero), and I have no per-trial logs to test it.
+- Caveats: 6 mm reinforcement radius chosen by me, random approach/avoid assignment of the MBONs, one odour pair, one trial sequence, a 10% recovery rate chosen after an earlier weak reversal, and exploration noise added after run 1. Learning and control used different random noise streams.
