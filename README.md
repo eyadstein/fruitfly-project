@@ -115,3 +115,21 @@ A rate network built from the FAFB v783 connections (acetylcholine excitatory, G
 - Random neurons chosen from the matching hemisphere steer just as well, so the steering depends on left/right lateralisation and not on the specific olfactory-to-descending wiring. (A control that mixed hemispheres failed, which only shows that lateralisation matters.)
 - The plain-odour reference used a lower gain than the brain controllers, so the gap between them is not a fair comparison.
 - Caveats: a crude rate model (not the published leaky integrate-and-fire models), 8 trials per row, one odour source, a hand-chosen mapping from descending-neuron balance to turning.
+
+## Learning: mushroom-body plasticity steering a walking fly
+
+Real KC -> MBON connectivity (5,177 Kenyon cells, 96 MBONs, 26,937 connections) from the FAFB connectome. Two odours are sets of 8 olfactory-receptor types each (disjoint), pushed through the whole-brain rate model; the top 5% of KCs (~258 per odour, 2.8% overlap between the two) form the code. MBONs are split at random into approach and avoid groups (the real valence assignment is not used). Learning is dopamine-style depression: pairing an odour with reward weakens its KC synapses onto avoid-MBONs, pairing with punishment weakens approach-MBONs. Net approach drive for each odour, read at the left and right antenna, sets the walking turn.
+
+Probe (10 random odour pairs and MBON splits): preference index for A over B (range -2 to +2) before training 0.03, after 10 trials of A rewarded and B punished +1.31, after reversal -1.28. Real and shuffled (degree-preserving) wiring tie (1.31 vs 1.32; -1.28 vs -1.33).
+
+Walking in the arena (A rewarded odour at 12.8 mm, B at 8.0 mm, closer and on the opposite side; 4 angles x 2 seeds), same gain in all conditions:
+
+| Condition | Reached A | Reached B | Neither |
+|---|---|---|---|
+| Naive | 1 | 1 | 6 |
+| Trained (A good, B bad) | 8 | 0 | 0 |
+| Reversed (A bad, B good) | 0 | 8 | 0 |
+
+- The trained fly walks to the farther rewarded odour past the nearer one; after reversal she walks to the other.
+- Without synaptic recovery, reversal was weak (0 A, 2 B, 6 neither) because depression is permanent in the rule. A recovery step (depressed synapses move 10% of the way back each trial) was added after seeing this, so it was not a pre-planned parameter.
+- Caveats: the weights are trained offline and frozen during each walk (no learning from experience inside the simulation), one odour pair, one random approach/avoid split, 8 trials per condition, no shuffled-wiring control in the walking test.
