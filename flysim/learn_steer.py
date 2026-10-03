@@ -75,6 +75,7 @@ for _ in range(N_LEARN):
     w[np.ix_(app, SB)] *= 1 - ETA
 states["trained (A good, B bad)"] = w.copy()
 for _ in range(N_REVERSE):
+    w += 0.1 * (M0 - w)                  # depressed synapses slowly recover
     w[np.ix_(app, SA)] *= 1 - ETA
     w[np.ix_(av, SB)] *= 1 - ETA
 states["reversed (A bad, B good)"] = w.copy()
