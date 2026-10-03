@@ -133,3 +133,18 @@ Walking in the arena (A rewarded odour at 12.8 mm, B at 8.0 mm, closer and on th
 - The trained fly walks to the farther rewarded odour past the nearer one; after reversal she walks to the other.
 - Without synaptic recovery, reversal was weak (0 A, 2 B, 6 neither) because depression is permanent in the rule. A recovery step (depressed synapses move 10% of the way back each trial) was added after seeing this, so it was not a pre-planned parameter.
 - Caveats: the weights are trained offline and frozen during each walk (no learning from experience inside the simulation), one odour pair, one random approach/avoid split, 8 trials per condition, no shuffled-wiring control in the walking test.
+
+## Online learning: learning from experience, then a contingency flip
+
+A naive fly walks 32 trials in the two-odour arena (A at 12.8 mm, B at 8.0 mm, closer and on the opposite side; random target angle each trial). KC-to-MBON weights carry over between trials. Coming within 6 mm of a source triggers the signal (a design choice that lets near passes teach her): in trials 1-16 A is rewarded and B punished, in trials 17-32 the contingency is flipped. Depressed synapses recover 10% per trial. A no-learning control runs the same trial sequence with fixed weights.
+
+| Trials | Learning: A / B / neither | Mean valence A, B | Control: A / B / neither |
+|---|---|---|---|
+| 1-16 | 15 / 0 / 1 | A +0.36 to +0.81, B -0.36 to -0.55 | 0 / 0 / 16 |
+| 17-32 | 2 / 1 / 13 | A +0.34 to +0.13, B -0.48 to +0.23 | 0 / 0 / 16 |
+
+![Online learning and contingency flip](figures/online_learning.png)
+
+- She learns from experience: 15 of 16 arrivals at the rewarded odour (past the closer one), against 0 of 16 for the control.
+- After the flip she stops going to A within a block but relearns B only slowly (1 arrival in 16 trials). Likely cause (untested at this point): with near-zero drive she wanders without visiting a source, so no reinforcement arrives.
+- Caveats: 6 mm reinforcement radius chosen by me, random approach/avoid assignment of MBONs, one odour pair, one trial sequence, 10% recovery rate chosen after an earlier weak reversal.
