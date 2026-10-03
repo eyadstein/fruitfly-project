@@ -17,7 +17,7 @@ from flygym_demo.complex_terrain import (
 from odour_steer import antenna_positions, concentration
 
 BASE, GAIN, DIST, ARRIVE, RUN_TIME, WINDOW = 0.8, 10.0, 12.8, 3.0, 3.0, 500
-ANGLES, SEEDS = [-45, 45], [0, 1]
+ANGLES, SEEDS = [-60, -30, 30, 60], [0, 1]
 CW, CI = Path("connectome/brain_W.npz"), Path("connectome/brain_idx.npz")
 
 
@@ -44,7 +44,10 @@ def build_brain():
 
     olf, dn = cls["class"] == "olfactory", cls["super_class"] == "descending"
     sp.save_npz(CW, W)
-    np.savez(CI, OL=sel(olf, "left"), OR=sel(olf, "right"), DL=sel(dn, "left"), DR=sel(dn, "right"))
+    sd = dict(zip(cls["root_id"], cls["side"]))
+    side = np.array([sd.get(i, "") for i in ids])
+    np.savez(CI, OL=sel(olf, "left"), OR=sel(olf, "right"), DL=sel(dn, "left"), DR=sel(dn, "right"),
+             L=np.where(side == "left")[0], R=np.where(side == "right")[0])
 
 
 class Brain:
@@ -70,16 +73,15 @@ class Brain:
         self.base = self.step(1.0, 1.0, 1)
 
 
-if not CW.exists():
+if not CW.exists() or "L" not in np.load(CI).files:
     print("building and caching the brain model (first run only)...")
     build_brain()
 W = sp.load_npz(CW).tocsr()
 d = np.load(CI)
 real = Brain(W, d["OL"], d["OR"], d["DL"], d["DR"])
-perm = np.random.default_rng(0).permutation(W.shape[0])
-sizes = [len(d[k]) for k in ("OL", "OR", "DL", "DR")]
-cut = np.cumsum([0] + sizes)
-rand = Brain(W, *[perm[cut[i]:cut[i + 1]] for i in range(4)])
+rg = np.random.default_rng(0)
+pick = lambda pool, k: rg.choice(pool, len(d[k]), replace=False)
+rand = Brain(W, pick(d["L"], "OL"), pick(d["R"], "OR"), pick(d["L"], "DL"), pick(d["R"], "DR"))
 print(f"baseline bias: real {real.base:.3f}, random control {rand.base:.3f}")
 
 fly = make_locomotion_fly(name="brain", add_adhesion=True, colorize=True)
@@ -139,10 +141,9 @@ def trial(brain, sign, gain, angle, seed):
 
 conds = {
     "plain odour (reference, gain 3.8)": (None, 1.0, 3.8),
-    "real brain, DN-left turns left": (real, 1.0, GAIN),
-    "real brain, DN-left turns right": (real, -1.0, GAIN),
-    "random in/out neurons, turns left": (rand, 1.0, GAIN),
-    "random in/out neurons, turns right": (rand, -1.0, GAIN),
+    "real brain (olfactory -> descending)": (real, 1.0, GAIN),
+    "side-matched random neurons": (rand, 1.0, GAIN),
+    "side-matched random, opposite sign": (rand, -1.0, GAIN),
 }
 res = {c: [] for c in conds}
 jobs = [(s, a, c) for s in SEEDS for a in ANGLES for c in conds]

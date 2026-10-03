@@ -7,3 +7,5 @@ connectome/data/
 flysim/output/
 connectome/brain_W.npz
 connectome/brain_idx.npz
+connectome/brain_W.npz
+connectome/brain_idx.npz

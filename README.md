@@ -99,3 +99,19 @@ Two odours (A rewarded at 12.8 mm, B distractor at 8.0 mm, closer and on the opp
 - The connection table is filtered at 5 synapses, and each PN is treated as an independent input dimension.
 - The odour discrimination readout is set directly from the two odours (no learning), with one odour pair and 12 trials per controller.
 - Sample sizes are small, so differences of one or two trials are within noise.
+
+## Brain-in-the-loop steering (whole-brain connectome rate model)
+
+A rate network built from the FAFB v783 connections (acetylcholine excitatory, GABA and glutamate inhibitory; other transmitters ignored; each neuron's inputs normalised to sum to 1). Odour at the left and right antenna drives the left and right olfactory neurons; the left/right difference in descending-neuron activity (baseline subtracted) sets the walking turn. 4 angles x 2 seeds, target 12.8 mm away, arrival is within 3 mm:
+
+| Controller | Arrived | Median time | Mean closest |
+|---|---|---|---|
+| Plain odour (gain 3.8) | 4/8 | 1.08 s | 3.3 mm |
+| Real brain (olfactory -> descending, gain 10) | 8/8 | 1.21 s | 3.0 mm |
+| Side-matched random neurons (gain 10) | 8/8 | 1.03 s | 3.0 mm |
+| Side-matched random, opposite sign | 0/8 | - | 11.3 mm |
+
+- The connectome network steers the walking fly to the odour, in the sign where more left-descending activity turns the fly left.
+- Random neurons chosen from the matching hemisphere steer just as well, so the steering depends on left/right lateralisation and not on the specific olfactory-to-descending wiring. (A control that mixed hemispheres failed, which only shows that lateralisation matters.)
+- The plain-odour reference used a lower gain than the brain controllers, so the gap between them is not a fair comparison.
+- Caveats: a crude rate model (not the published leaky integrate-and-fire models), 8 trials per row, one odour source, a hand-chosen mapping from descending-neuron balance to turning.
