@@ -1,41 +1,81 @@
 # Fruit Fly Toolkit
 
-FlyHash similarity search + Fruit Fly Optimization Algorithm, served with FastAPI.
+A small project that borrows two ideas from the fruit fly, tests them with measurements, and then connects them to the FlyWire connectome and a simulated fly body.
 
-## Run
-    python -m pytest -q
-    uvicorn app:app --reload
+- **FlyHash:** the fly's olfactory circuit (sparse random expansion plus winner-take-all) used as a similarity-search index.
+- **FOA:** the Fruit Fly Optimization Algorithm, used to tune FlyHash.
+- **Connectome:** analysis of the FlyWire FAFB v783 brain, and a PN to Kenyon cell circuit built from the real wiring.
+- **NeuroMechFly:** a simulated fly (FlyGym 2.1.0) that walks and steers toward an odour.
+
+## Main findings
+
+1. Tuned FlyHash matches exact cosine search on retrieval quality for real text (0.395 vs 0.399 same-newsgroup precision), at 0.83 recall of the exact neighbours.
+2. FOA and random search tie on this tuning problem.
+3. The four biggest mushroom-body hubs in the connectome are APL and DPM neurons.
+4. The specific PN to Kenyon cell wiring never beat a degree-preserving shuffle in any test (recall, text retrieval, steering, odour discrimination). What mattered was sparse expansion with winner-take-all, and how evenly the PNs are used.
+5. In steering, a sparse KC code with a readout discriminates two odours that a plain concentration signal cannot.
+
+## Repository layout
+
+| Path | What it does |
+|---|---|
+| `fruitfly/`, `app.py`, `tests/` | FlyHash index, FOA, FastAPI service (`/index`, `/search`, `/optimize/sphere`), pytest |
+| `Dockerfile`, `.github/workflows/ci.yml` | Container and CI that runs the tests |
+| `benchmark.py`, `tune.py`, `tune2.py`, `tune3.py` | Recall benchmark and FOA vs random tuning |
+| `text_demo.py` | FlyHash on 20 Newsgroups text |
+| `connectome/` | Graph analysis, hub plots, real-wiring FlyHash benchmarks |
+| `flysim/` | NeuroMechFly demos: standing, walking, steering, controller comparisons |
+| `figures/` | Result figures |
+
+## Setup
+
+- Core toolkit: Python with numpy, fastapi, uvicorn, pytest (`pip install -r requirements.txt`). Run `python -m pytest -q` and `uvicorn app:app --reload`.
+- Connectome scripts: also need pandas, networkx, matplotlib, pyarrow, scipy. Download the FAFB v783 **Connections (Filtered)**, **Classification / Hierarchical Annotations** and **Consolidated cell types** tables from codex.flywire.ai into `connectome/data/` (not committed).
+- Simulation scripts: FlyGym supports Python 3.9 to 3.12, so use a separate environment on Python 3.12 with `pip install flygym tqdm`. `text_demo.py` also needs scikit-learn.
 
 ## Results
 
-Recall@10 against exact cosine search (1,000 random 128-d vectors, noisy held-out queries, 3 seeds):
+### FlyHash tuning (1,000 random 128-d vectors, held-out queries, 3 seeds)
 
 | Setting | recall@10 | ms/query |
 |---|---|---|
 | Default (expansion 20, wta 0.05, sample 0.10) | 0.345 | 4.3 |
-| Random search, 96 evaluations | 0.650 +/- 0.026 | 13.4 |
-| FOA, 8 flies x 12 iterations | 0.667 +/- 0.028 | 15.2 |
+| Random search, wta capped at 0.10 | 0.650 +/- 0.026 | 13.4 |
+| FOA, wta capped at 0.10 | 0.667 +/- 0.028 | 15.2 |
 
-- Tuning nearly doubles recall over the defaults.
-- FOA and random search are statistically tied on this 3-parameter problem.
-- Best settings sit at the search bounds (expansion ~75-80, wta 0.10, sample_frac ~0.28-0.30), so recall is limited by code size, at the cost of ~3.5x query time.
-- Relaxing sparsity (wta ~0.30) reached 0.758, so the sparse cap costs about 0.09 recall.
-- Caveat: random Gaussian data is a hard, unrealistic test; real embeddings are the next step.
+- Tuning nearly doubles recall. FOA and random search are tied.
+- Best settings sit at the search bounds, so recall is limited by code size, at about 3.5x the query time.
+- Without the sparsity cap, both methods reach about 0.758 with wta near 0.30, so keeping the code fly-sparse costs about 0.09 recall.
 
-## Connectome experiment (FlyWire FAFB v783)
+### FlyHash on real text (20 Newsgroups, TF-IDF + SVD to 142 dimensions)
 
-Built a PN -> Kenyon cell projection from the real connectome (142 PNs, 2,376 KCs, 10,702 connections, right hemisphere, connections >= 5 synapses) and compared it with random wiring as the FlyHash expansion layer.
+3,000 indexed documents, 150 queries per seed, 3 seeds, k=10. Precision is the fraction of retrieved documents from the query's own newsgroup (chance 0.05).
 
-- The four biggest mushroom-body hubs are APL and DPM neurons (checked against the cell-type table), the feedback neurons associated with keeping the KC code sparse.
-- recall@10 vs exact cosine (5 seeds): real wiring and a degree-preserving shuffle are tied in every setting; random wiring with matched KC in-degree is better by ~0.05-0.12 at wta 0.05-0.10.
-- Interpretation: the specific PN->KC pairing does not matter on this data; the uneven PN fan-out costs recall. Real data and recall-vs-discrimination tasks are untested.
-- Caveats: synthetic inputs, each PN treated as an independent dimension, filtered connection table.
+| Method | Recall vs exact cosine | Same-newsgroup precision |
+|---|---|---|
+| Exact cosine | 1.000 | 0.399 |
+| FlyHash default | 0.521 | 0.316 |
+| FlyHash tuned (exp 75, wta 0.10, sf 0.28) | 0.826 | 0.395 |
+| Real PN to KC wiring, wta 0.05 / 0.10 | 0.320 / 0.328 | 0.260 / 0.277 |
+| Shuffled wiring, wta 0.05 / 0.10 | 0.333 / 0.335 | 0.270 / 0.277 |
+| Random in-degree, wta 0.05 / 0.10 | 0.390 / 0.542 | 0.304 / 0.354 |
 
-## Steering experiment (NeuroMechFly 2.1.0, hybrid turning controller)
+- The tuned code uses 10,650 cells per document (about 1.3 KB as bits against 568 bytes for the raw vector), so there is no storage saving at these settings.
+- Real wiring ties a degree-preserving shuffle. Evenly spread random wiring is better, increasingly so at higher sparsity.
 
-A simulated fly walks toward an odour source, steering from a left/right antenna signal. Controllers compared: plain odour difference, and a sparse PN->Kenyon-cell circuit built from the FlyWire wiring (threshold + top-5% winner-take-all as an APL stand-in), with real and degree-preserving shuffled wiring.
+### Connectome (FlyWire FAFB v783)
 
-6 target angles x 3 seeds per controller, target 12.8 mm away, arrival = within 3 mm:
+- 138,584 neurons and 3,732,460 connections (at least 5 synapses). Optic neurons are 56% of the brain but about 13% of the top 500 hubs by PageRank. Descending neurons are about 1% of the brain and 21% of those hubs.
+- PageRank rewards neurons that receive from many well-connected neurons, so sensory neurons (sources) rank low by construction.
+- The four biggest mushroom-body hubs are two APL and two DPM neurons (checked against the cell-type table).
+- Real circuit (right hemisphere, connections of at least 5 synapses): 142 PNs, 2,376 Kenyon cells, 10,702 connections, about 4.5 inputs per Kenyon cell. The top 10 PNs hold 28.8% of the connections (even spread would be 7.0%).
+- recall@10 against exact cosine on random vectors, 5 seeds: real wiring and a degree-preserving shuffle are tied in every setting; random wiring with matched in-degree is better by about 0.05 to 0.12 at wta 0.05 to 0.10.
+
+### Simulated fly
+
+A FlyGym walking demo reproduces the official tutorial (27.3 mm in 2 s against 27.34 mm). Steering uses the hybrid turning controller driven by a left/right antenna signal.
+
+Single odour, 6 target angles x 3 seeds, target 12.8 mm away, arrival is within 3 mm:
 
 | Controller | Arrived | Median time | Mean closest |
 |---|---|---|---|
@@ -43,14 +83,7 @@ A simulated fly walks toward an odour source, steering from a left/right antenna
 | Circuit, real wiring (gain 3.0) | 12/18 | 1.06 s | 3.1 mm |
 | Circuit, shuffled wiring (gain 3.0) | 12/18 | 1.07 s | 3.2 mm |
 
-- Real and shuffled wiring perform identically; the circuit acts as a gain/nonlinearity stage, not a wiring-specific one.
-- With a single odour every channel scales with the same concentration, so PN identity cannot matter here.
-- The plain-vs-circuit gap (2 trials of 18) is within chance and confounded by different gains.
-- Untested: two odours with different PN patterns, where a KC code could discriminate and a plain concentration signal cannot.
-
-## Two-odour discrimination (steering toward A, away from a closer distractor B)
-
-Odour A (rewarded, 12.8 mm) and odour B (distractor, 8.0 mm, closer, opposite side) with nearly uncorrelated PN patterns (r = -0.04, ~93 KCs active each). The circuit uses a readout set from the two odours' KC codes (+1 on A's cells, -1 on B's). 4 angles x 3 seeds per controller:
+Two odours (A rewarded at 12.8 mm, B distractor at 8.0 mm, closer and on the opposite side; nearly uncorrelated PN patterns, about 93 KCs active each), 4 angles x 3 seeds:
 
 | Controller | Reached A | Reached B | Neither | Median time to A |
 |---|---|---|---|---|
@@ -58,24 +91,11 @@ Odour A (rewarded, 12.8 mm) and odour B (distractor, 8.0 mm, closer, opposite si
 | Circuit, real wiring + readout | 11 | 0 | 1 | 1.04 s |
 | Circuit, shuffled wiring + readout | 12 | 0 | 0 | 1.06 s |
 
-- A sparse KC code with a readout discriminates odours that a plain concentration signal cannot.
-- Real and shuffled wiring are indistinguishable (11 vs 12 of 12): the discrimination comes from sparse expansion and winner-take-all, not the specific PN->KC pairing. This matches the FlyHash recall benchmark and the single-odour steering result.
-- Caveats: the readout is set directly from the two odours (no learning), one odour pair, 12 trials per controller.
+![Fly paths on the two-odour task](figures/two_odour_paths.png)
 
-## FlyHash on real text (20 Newsgroups, TF-IDF + SVD to 142 dimensions)
+## Caveats
 
-3,000 indexed documents, 150 queries per seed, 3 seeds, k=10. Precision = fraction of the 10 retrieved documents from the query's own newsgroup (chance 0.05).
-
-| Method | Recall vs exact cosine | Same-newsgroup precision |
-|---|---|---|
-| Exact cosine | 1.000 | 0.399 |
-| FlyHash default (exp 20, wta 0.05, sf 0.10) | 0.521 | 0.316 |
-| FlyHash tuned (exp 75, wta 0.10, sf 0.28) | 0.826 | 0.395 |
-| Real PN->KC wiring, wta 0.05 / 0.10 | 0.320 / 0.328 | 0.260 / 0.277 |
-| Shuffled wiring, wta 0.05 / 0.10 | 0.333 / 0.335 | 0.270 / 0.277 |
-| Random in-degree, wta 0.05 / 0.10 | 0.390 / 0.542 | 0.304 / 0.354 |
-
-- Tuned FlyHash matches exact cosine on same-newsgroup precision (0.395 vs 0.399), so tuning on random data transferred to text.
-- Tuned FlyHash uses 10,650 cells per document (~1.3 KB as bits vs 568 bytes for the raw vector), so there is no storage saving at these settings.
-- Real wiring ties a degree-preserving shuffle; evenly spread random wiring is better, increasingly so at higher sparsity, consistent with the uneven PN fan-out.
-- Caveats: classic TF-IDF vectors rather than neural embeddings; the real circuit sees ~4.5 inputs per KC.
+- Synthetic and classic TF-IDF inputs, not real odour data or neural embeddings.
+- The connection table is filtered at 5 synapses, and each PN is treated as an independent input dimension.
+- The odour discrimination readout is set directly from the two odours (no learning), with one odour pair and 12 trials per controller.
+- Sample sizes are small, so differences of one or two trials are within noise.
