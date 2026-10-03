@@ -5,3 +5,5 @@ connectome/data/
 connectome/data/
 .venv-fly/
 flysim/output/
+connectome/brain_W.npz
+connectome/brain_idx.npz
