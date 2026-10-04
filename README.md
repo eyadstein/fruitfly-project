@@ -160,3 +160,15 @@ Run 2 (exploration noise added after run 1, so a post-hoc change; the figure sho
 - After the flip she unlearns A within about 8 trials, and B's valence turns positive around trial 25. She reaches B in 3 of the last 4 trials, but the run ends just as relearning starts, so reversal is incomplete. Reversal is slower than acquisition (about 12 trials against about 4).
 - The stall explanation is only partly supported (4 of 4 time-outs when both valences were near zero), and I have no per-trial logs to test it.
 - Caveats: 6 mm reinforcement radius chosen by me, random approach/avoid assignment of the MBONs, one odour pair, one trial sequence, a 10% recovery rate chosen after an earlier weak reversal, and exploration noise added after run 1. Learning and control used different random noise streams.
+
+Run 3 (longer series: 24 trials per phase, no control rerun; figure `figures/online_learning_long.png`):
+
+| Trials | Learning: A / B / neither | Mean valence A, B |
+|---|---|---|
+| 1-24 (A rewarded, B punished) | 21 / 0 / 3 | A +0.48 to +0.80, B -0.23 to -0.46 |
+| 25-48 (flipped) | 4 / 9 / 11 | A +0.46 to +0.00, B -0.39 to +0.58 |
+
+- Acquisition is stable (21 of 24 at the rewarded odour); the first 16 trials reproduce run 2 exactly.
+- After the flip she unlearns A in about 8 trials and relearns B in about 12; B's valence reaches +0.58, close to the offline-reversed value (+0.59).
+- She reaches B in 9 of the last 16 trials (6 of the last 12), so reversal is complete in valence but only partial in behaviour. Untested explanations: exploration noise, and A's valence staying near zero because she seldom visits A in phase 2 to be punished.
+- The no-learning control was not rerun for 48 trials; in run 2 it reached B in 1 of 16 phase-2 trials.
