@@ -172,3 +172,11 @@ Run 3 (longer series: 24 trials per phase, no control rerun; figure `figures/onl
 - After the flip she unlearns A in about 8 trials and relearns B in about 12; B's valence reaches +0.58, close to the offline-reversed value (+0.59).
 - She reaches B in 9 of the last 16 trials (6 of the last 12), so reversal is complete in valence but only partial in behaviour. Untested explanations: exploration noise, and A's valence staying near zero because she seldom visits A in phase 2 to be punished.
 - The no-learning control was not rerun for 48 trials; in run 2 it reached B in 1 of 16 phase-2 trials.
+
+## Valence-faithful MBON groups (offline probe)
+
+The random approach/avoid split of MBONs was replaced by MBON types whose activation is reported to drive avoidance (MBON01-05, glutamatergic horizontal-lobe types) or approach (MBON09, MBON11, MBON12; GABAergic and cholinergic). The assignment comes from secondary sources quoting Aso et al. 2014; the paper itself was not opened. Type numbers 01-05 are from the paper's table. The numbering of 09, 11 and 12 was from memory and checked against the connectome's predicted transmitter: MBON01/03/04 glutamate (100%), MBON09/11 GABA (100%), MBON12 acetylcholine (100%); MBON02 (56% GABA, 44% glutamate) and MBON05 (50% acetylcholine, 50% glutamate) are ambiguous. Groups: 10 avoid and 10 approach MBONs, with 6,093 and 7,872 KC-to-MBON connections.
+
+Preference for A over B (10 random odour pairs, rule with 10% recovery): faithful valence on real wiring -0.008 / 1.321 / -0.839 (before / after training / after reversal), on shuffled wiring 0.025 / 1.339 / -0.810, random split of all MBONs -0.005 / 1.322 / -0.834.
+
+All conditions agree because the normalised preference index is set by the rule constants (10 trials of 15% depression leave 20% of the weight, giving about 1.34 when approach and avoid inputs are balanced; the reversal value follows from the 10% recovery), so this probe cannot discriminate wiring or valence assignments. It shows only that the rule works on these groups. The earlier probe values (1.31 and -1.28) share this limitation.
