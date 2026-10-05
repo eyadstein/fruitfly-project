@@ -180,3 +180,15 @@ The random approach/avoid split of MBONs was replaced by MBON types whose activa
 Preference for A over B (10 random odour pairs, rule with 10% recovery): faithful valence on real wiring -0.008 / 1.321 / -0.839 (before / after training / after reversal), on shuffled wiring 0.025 / 1.339 / -0.810, random split of all MBONs -0.005 / 1.322 / -0.834.
 
 All conditions agree because the normalised preference index is set by the rule constants (10 trials of 15% depression leave 20% of the weight, giving about 1.34 when approach and avoid inputs are balanced; the reversal value follows from the 10% recovery), so this probe cannot discriminate wiring or valence assignments. It shows only that the rule works on these groups. The earlier probe values (1.31 and -1.28) share this limitation.
+
+Run 4 (valence-faithful MBON groups, 24 trials per phase; figure `figures/online_learning_faithful.png`):
+
+| Trials | Learning: A / B / neither | Mean valence A, B |
+|---|---|---|
+| 1-24 (A rewarded, B punished) | 21 / 0 / 3 | A +0.44 to +0.82, B -0.13 to -0.44 |
+| 25-48 (flipped) | 4 / 10 / 10 | A +0.32 to +0.03, B -0.29 to +0.71 |
+
+- Behaviour matches run 3 (random approach/avoid split): 21 of 24 at the rewarded odour in phase 1; after the flip 10 of 24 at B (9 in run 3), and 6 of the last 12 at B in both runs. The result does not depend on which MBONs carry approach or avoid valence.
+- The faithful groups start with no preference between the odours (naive valence A +0.10, B +0.06).
+- B's valence ends higher than in run 3 (+0.71 against +0.58) without raising arrivals at B, so the partial reversal is not limited by B's learned value. Untested candidates: exploration noise, and A's valence staying near zero instead of negative.
+- Caveats: one odour pair, MBON02 and MBON05 have mixed predicted transmitters, valence assignments come from secondary sources.
