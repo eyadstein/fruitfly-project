@@ -192,3 +192,5 @@ Run 4 (valence-faithful MBON groups, 24 trials per phase; figure `figures/online
 - The faithful groups start with no preference between the odours (naive valence A +0.10, B +0.06).
 - B's valence ends higher than in run 3 (+0.71 against +0.58) without raising arrivals at B, so the partial reversal is not limited by B's learned value. Untested candidates: exploration noise, and A's valence staying near zero instead of negative.
 - Caveats: one odour pair, MBON02 and MBON05 have mixed predicted transmitters, valence assignments come from secondary sources.
+
+Diagnostics for the partial reversal (frozen reversed weights, faithful groups, 4 angles x 2 seeds): exploration noise (wander 0.0 vs 0.3) changed B arrivals from 8/8 to 7/8, and zeroing A's learned drive left them unchanged (8/8 and 7/8). Neither explains why the online fly reached B in 10 of 24 phase-2 trials (5 of the last 8). The online-versus-frozen difference is small relative to the sample (8 trials per row) and may be chance; the online runs also used different controller seeds and random angles.
