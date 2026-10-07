@@ -195,3 +195,16 @@ Run 4 (valence-faithful MBON groups, 24 trials per phase; figure `figures/online
 
 Diagnostics for the partial reversal (valence-faithful groups). Frozen reversed weights, 4 angles x 2 seeds: exploration noise (wander 0.0 vs 0.3) changed B arrivals from 8/8 to 7/8, and zeroing A's learned drive changed nothing (8/8 and 7/8). Replaying the online run's own 24 phase-2 trials (same angles and controller seeds, wander 0.3) with frozen reversed weights reached B in 20 of 24, against 10 of 24 for the online learner; B arrivals per block of 4 were [2, 4, 3, 4, 3, 4] frozen against [0, 2, 2, 1, 3, 2] online. The gap sits mostly in the first four blocks, where the online learner still carries the pre-flip preference, so the replay is not a like-for-like control there. In trials 41-48 the online learner reached B in 5 of 8 against 7 of 8, with B's learned valence matching the frozen value (+0.64 to +0.71 against +0.64). Reading: the partial reversal is largely the time needed to unlearn A and learn B (about 16 trials after the flip, against about 4 to 8 for the first lesson), and the series ended as it caught up. A small residual deficit is possible but not resolved with 8 trials. The cause of the slower reversal was not tested.
 
+Run 5 (valence-faithful groups, 24 trials of phase 1 and 40 of phase 2; figure `figures/online_learning_faithful_long.png`):
+
+| Trials | A / B / neither | B arrivals per block of 4 | Mean valence B |
+|---|---|---|---|
+| 25-40 | 4 / 5 / 7 | 0, 2, 2, 1 | -0.29 to +0.47 |
+| 41-48 | 0 / 5 / 3 | 3, 2 | +0.64 to +0.71 |
+| 49-64 | 0 / 14 / 2 | 3, 3, 4, 4 | +0.74 to +0.77 |
+
+![Online learning, long run with valence-faithful groups](figures/online_learning_faithful_long.png)
+
+- After the contingency flip she reaches B in 14 of the last 16 trials (4 of 4 in the final two blocks), matching the frozen reversed weights (14 of 16 in their last four blocks, a different trial set). This resolves the earlier question about a residual deficit: the partial reversal in run 4 was the time needed to relearn, which took about 16 trials after the flip against 4 or fewer for the first lesson. The cause of the slower reversal was not tested.
+- She stops going to A (no A arrivals after trial 32). A's learned valence drifts back to its naive value (+0.10) because she no longer visits A to be punished: she forgets A and does not learn to avoid it.
+- Caveats: one odour pair and one trial sequence, 4 trials per block, 6 mm reinforcement radius chosen by me, MBON02 and MBON05 have mixed predicted transmitters.
