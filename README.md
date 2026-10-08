@@ -175,6 +175,23 @@ The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repea
 - Seed 3 did not relearn: after the flip 7 of its 8 visits went to A and 1 to B, so B was rewarded once and its valence ended at +0.02. This is consistent with reward arriving only on chance visits; it is one seed.
 - Evidence is moderate. 20 s bins are noisy (in the first 20 s, when both groups are still naive, pooled shares were 50% vs 32%; in 20-40 s 71% vs 80%). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted. Five seeds, one odour pair, and parameters chosen in earlier runs.
 
+#### Time-based recovery (post hoc, criterion not met)
+
+Seed 3 did not relearn (see above). I proposed a possible cause after seeing it: recovery of depressed synapses happened only on visits, so a fly that stops visiting a source cannot regain interest in it. I added time-based recovery (depressed weights drift back to their naive values with a 30 s time constant, the only value tried) and reran the five learning episodes (`flysim/capstone_decay.py`, `results/capstone_decay_seed*_learn.json`; controls reused, since their weights are frozen). Criterion fixed before the runs: late-phase (110-160 s) share at B of at least 60% with at least 5 visits in all 5 seeds, and pooled phase-1 share at A of at least 65%. Outcome: **not met**. Four of 5 seeds passed; seed 3 reached 50% on 6 visits. The pooled phase-1 condition passed narrowly (66%, 40 of 61 visits).
+
+| Seed | Phase 2, share at B: no-decay / time-decay / control | Late phase, share at B: no-decay / time-decay / control |
+|---|---|---|
+| 0 | 72% / 77% / 62% | 81% / 80% / 57% |
+| 1 | 46% / 76% / 38% | 80% / 87% / 27% |
+| 2 | 80% / 70% / 42% | 85% / 73% / 29% |
+| 3 | 12% / 47% / 40% | 0% / 50% / 50% |
+| 4 | 74% / 50% / 29% | 75% / 60% / 18% |
+| pooled | 67% / 67% / 41% | 75% / 73% / 36% |
+
+- Pooled results are the same with and without time decay, so it neither helps nor hurts overall. Seed 3 improved (B valence at the end +0.02 to +0.31) and seed 4 got worse (phase 2 at B 74% to 50%); per-seed differences between the two versions are mostly different random trajectories, since runs diverge once the learned values differ. The decay shrinks the learned values (end valence of B +0.31 to +0.59 against +0.56 to +0.72 without it, apart from seed 3).
+- The comparison with controls replicates: time-decay learning is ahead of its control in phase 2 in 5 of 5 seeds (seed 3 only slightly) and pooled 67% vs 41%.
+- Whether the stuck dynamic explains seed 3 remains untested. This change was chosen after seeing seed 3, so the no-decay five-seed result remains the primary one.
+
 ## Not done: flight
 
 The NeuroMechFly walking body has no wing flight. The flybody model (DeepMind/Janelia) has wings and installs and renders on Windows, but its repository ships no trained flight policy and points to a distributed reinforcement-learning training script that needs Linux and a TensorFlow stack. Flight would mean training a flight controller from scratch, which was not attempted.
