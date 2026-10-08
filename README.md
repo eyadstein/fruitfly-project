@@ -137,6 +137,22 @@ The no-learning control (runs 1 and 2, same trial sequence, fixed weights) reach
 - The result does not depend on which MBONs carry approach or avoid valence (runs 3 and 4 match). Exploration noise and zeroing A's drive cost at most one trial in the frozen diagnostics (8/8 and 7/8 reaching B), so neither explains the slower online reversal.
 - The offline preference index in the earlier learning probes (about 1.3 after training) is set by the rule constants (15% depression, 10% recovery, trial counts) and is the same for any wiring or MBON assignment, so those probes show only that the rule works.
 
+## Capstone: cage, odours and learning in one run
+
+`flysim/capstone.py` runs one continuous 100 s episode in a 50 mm box with no resets. Odours A and B sit at random positions at least 10 mm apart. Coming within 6 mm of a source counts as a visit: it triggers the KC to MBON learning rule (valence-faithful MBON groups, 10% recovery per visit) and respawns that source elsewhere. A is rewarded and B punished until 40 s, then the contingency is flipped. Steering uses the learned approach drive read at the two antennae, and a wall rule turns her toward the centre when she is within 6 mm of an edge. The no-learning control uses the same seed with weights frozen at their naive values. The whole-brain rate model is not in this loop (its steering turned out to be lateralisation), so the learned circuit is the real KC to MBON connectivity only. A 100 s run takes about 13 minutes.
+
+| | Phase 1 (0-40 s, A rewarded) | Phase 2 (40-100 s, B rewarded) |
+|---|---|---|
+| With learning | 4 visits (2 A, 2 B), 50% at A | 17 visits (4 A, 13 B), 76% at B |
+| No-learning control | 7 visits (3 A, 4 B), 43% at A | 12 visits (5 A, 7 B), 58% at B |
+
+![Capstone run](figures/capstone.png)
+
+- Everything ran together: she stayed in the box (0.4% of the time outside for under 1 mm, furthest 25.7 mm against the 25 mm wall; control 0.0%, 24.9 mm) and found sources about once every 5 s with or without learning (21 and 19 visits).
+- The learned valence follows the contingency: A rises to about +0.4 after rewarded visits and falls to about -0.1 after the flip; B falls to about -0.26 after punished visits, then rises to about +0.7 over the 17 visits after the flip.
+- Behavioural evidence is weak: only 4 visits happened before the flip, and 13 of 17 phase-2 visits at B against 7 of 12 in the control is well within chance at these counts. One run, one seed per condition.
+- Caveats: the wall is a rule in the controller (small excursions occurred), sources respawn at random positions, and the learning parameters are the ones chosen in the earlier runs.
+
 ## Not done: flight
 
 The NeuroMechFly walking body has no wing flight. The flybody model (DeepMind/Janelia) has wings and installs and renders on Windows, but its repository ships no trained flight policy and points to a distributed reinforcement-learning training script that needs Linux and a TensorFlow stack. Flight would mean training a flight controller from scratch, which was not attempted.
