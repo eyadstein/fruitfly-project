@@ -153,6 +153,22 @@ The no-learning control (runs 1 and 2, same trial sequence, fixed weights) reach
 - Behavioural evidence is weak: only 4 visits happened before the flip, and 13 of 17 phase-2 visits at B against 7 of 12 in the control is well within chance at these counts. One run, one seed per condition.
 - Caveats: the wall is a rule in the controller (small excursions occurred), sources respawn at random positions, and the learning parameters are the ones chosen in the earlier runs.
 
+### Capstone, multi-seed (3 seeds, 160 s episodes, flip at 60 s)
+
+The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repeats the capstone for seeds 0 to 2, each with a learning run and a no-learning control (episodes of 160 s, flip at 60 s, same 50 mm box); each episode is saved under `results/`, and `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. Criterion fixed before running: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in at least 2 of 3 seeds. Outcome: met (phase 1 in 2 of 3 seeds, phase 2 in 3 of 3).
+
+| Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
+|---|---|---|
+| 0 | 71% (5/2) vs 43% (6/8) | 72% (8/21) vs 62% (6/10) |
+| 1 | 77% (10/3) vs 56% (9/7) | 46% (7/6) vs 38% (13/8) |
+| 2 | 50% (4/4) vs 60% (6/4) | 80% (5/20) vs 42% (11/8) |
+| pooled | 68% (19/9) vs 52% (21/19) | 70% (20/47) vs 46% (30/26) |
+| late phase 2 (110-160 s) | | 82% (6/28) vs 36% (16/9) |
+
+- The control sits at chance (52% in phase 1, 46% in phase 2). The learned valence follows the contingency in all three seeds (before the flip A +0.54 to +0.75 and B -0.11 to -0.30; at the end A -0.08 to -0.23 and B +0.56 to +0.72). Right after the flip learning flies still visit A (36% at B in 60-80 s, then 55%, then 80% or more), so relearning takes about 40 to 50 s.
+- Learning and control found sources equally often (95 and 96 visits). Time outside the box was 0.0% to 0.3%, furthest 26.2 mm against the 25 mm wall.
+- Evidence is moderate: in phase 2 the gap is large in seed 2 but small in seeds 0 and 1 (72% vs 62%, 46% vs 38%), seed 2 goes the other way in phase 1 (8 and 10 visits), and 20 s bins are noisy (the control moved between 27% and 82% at A before the flip with no learning). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted.
+
 ## Not done: flight
 
 The NeuroMechFly walking body has no wing flight. The flybody model (DeepMind/Janelia) has wings and installs and renders on Windows, but its repository ships no trained flight policy and points to a distributed reinforcement-learning training script that needs Linux and a TensorFlow stack. Flight would mean training a flight controller from scratch, which was not attempted.
