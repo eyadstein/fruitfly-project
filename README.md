@@ -10,6 +10,7 @@ A project that starts from two fruit-fly-inspired algorithms (FlyHash similarity
 4. The specific PN to Kenyon-cell pairing in the real connectome never beat a degree-preserving shuffle in any test (FlyHash recall, text retrieval, steering, odour discrimination). Sparse expansion with winner-take-all, and how evenly PNs are used, is what mattered.
 5. A whole-brain connectome rate model placed in the walking loop steers the fly to an odour. A random network with the same hemisphere layout steers equally well, so the steering comes from left/right lateralisation, not from olfactory wiring.
 6. With a mushroom-body learning rule (dopamine-style depression of KC to MBON synapses) the fly learns from her own experience which of two odours is good, and relearns after the reward is flipped (about 16 trials to reverse, against 4 or fewer for the first lesson).
+7. In a continuous 160 s cage episode with two odours and a mid-run reward flip, learning flies make 75% of their late-phase visits to the rewarded odour against 36% for no-learning controls (5 seeds; 4 of 5 in the right direction, one seed did not relearn).
 
 ## Repository layout
 
@@ -19,8 +20,9 @@ A project that starts from two fruit-fly-inspired algorithms (FlyHash similarity
 | `Dockerfile`, `.github/workflows/ci.yml`, `pytest.ini` | Container and CI (pytest runs only `tests/`) |
 | `benchmark.py`, `tune.py`, `tune2.py`, `tune3.py`, `text_demo.py` | Recall benchmark, FOA vs random tuning, FlyHash on text |
 | `connectome/` | Graph analysis and hub plots, real-wiring FlyHash benchmarks, brain model probe, learning and valence probes |
-| `flysim/` | NeuroMechFly demos: standing, walking, cage, steering, brain-in-the-loop, learning and diagnostics (`stand.py`, `walk.py`, `cage.py`, `steer.py`, `brain_steer.py`, `learn_steer.py`, `online_learning*.py`, `*_diagnostic.py`, `phase2_replay.py`) |
+| `flysim/` | NeuroMechFly demos: standing, walking, cage, steering, brain-in-the-loop, learning and diagnostics (`stand.py`, `walk.py`, `cage.py`, `steer.py`, `brain_steer.py`, `learn_steer.py`, `online_learning*.py`, `*_diagnostic.py`, `phase2_replay.py`, `capstone*.py`) |
 | `figures/` | Result figures |
+| `results/` | Per-episode capstone results (JSON, 5 seeds x learning and control) |
 
 ## Setup
 
@@ -153,37 +155,25 @@ The no-learning control (runs 1 and 2, same trial sequence, fixed weights) reach
 - Behavioural evidence is weak: only 4 visits happened before the flip, and 13 of 17 phase-2 visits at B against 7 of 12 in the control is well within chance at these counts. One run, one seed per condition.
 - Caveats: the wall is a rule in the controller (small excursions occurred), sources respawn at random positions, and the learning parameters are the ones chosen in the earlier runs.
 
-### Capstone, multi-seed (3 seeds, 160 s episodes, flip at 60 s)
+### Capstone, multi-seed (5 seeds, 160 s episodes, flip at 60 s)
 
-The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repeats the capstone for seeds 0 to 2, each with a learning run and a no-learning control (episodes of 160 s, flip at 60 s, same 50 mm box); each episode is saved under `results/`, and `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. Criterion fixed before running: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in at least 2 of 3 seeds. Outcome: met (phase 1 in 2 of 3 seeds, phase 2 in 3 of 3).
-
-| Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
-|---|---|---|
-| 0 | 71% (5/2) vs 43% (6/8) | 72% (8/21) vs 62% (6/10) |
-| 1 | 77% (10/3) vs 56% (9/7) | 46% (7/6) vs 38% (13/8) |
-| 2 | 50% (4/4) vs 60% (6/4) | 80% (5/20) vs 42% (11/8) |
-| pooled | 68% (19/9) vs 52% (21/19) | 70% (20/47) vs 46% (30/26) |
-| late phase 2 (110-160 s) | | 82% (6/28) vs 36% (16/9) |
-
-- The control sits at chance (52% in phase 1, 46% in phase 2). The learned valence follows the contingency in all three seeds (before the flip A +0.54 to +0.75 and B -0.11 to -0.30; at the end A -0.08 to -0.23 and B +0.56 to +0.72). Right after the flip learning flies still visit A (36% at B in 60-80 s, then 55%, then 80% or more), so relearning takes about 40 to 50 s.
-- Learning and control found sources equally often (95 and 96 visits). Time outside the box was 0.0% to 0.3%, furthest 26.2 mm against the 25 mm wall.
-- Evidence is moderate: in phase 2 the gap is large in seed 2 but small in seeds 0 and 1 (72% vs 62%, 46% vs 38%), seed 2 goes the other way in phase 1 (8 and 10 visits), and 20 s bins are noisy (the control moved between 27% and 82% at A before the flip with no learning). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted.
-
-### Capstone, multi-seed (3 seeds, 160 s episodes, flip at 60 s)
-
-The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repeats the capstone for seeds 0 to 2, each with a learning run and a no-learning control (episodes of 160 s, flip at 60 s, same 50 mm box); each episode is saved under `results/`, and `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. Criterion fixed before running: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in at least 2 of 3 seeds. Outcome: met (phase 1 in 2 of 3 seeds, phase 2 in 3 of 3).
+The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repeats the capstone for seeds 0 to 4, each with a learning run and a no-learning control (160 s episodes, flip at 60 s, same 50 mm box). Each episode is saved under `results/`; `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. The criterion was fixed before the runs: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in a majority of seeds (written as 2 of 3 seeds for the first three seeds and extended to a majority of 5 before seeds 3 and 4 were run; the result also holds under at least 4 of 5). Outcome: met, with 4 of 5 seeds in the right direction in each phase.
 
 | Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
 |---|---|---|
 | 0 | 71% (5/2) vs 43% (6/8) | 72% (8/21) vs 62% (6/10) |
 | 1 | 77% (10/3) vs 56% (9/7) | 46% (7/6) vs 38% (13/8) |
 | 2 | 50% (4/4) vs 60% (6/4) | 80% (5/20) vs 42% (11/8) |
-| pooled | 68% (19/9) vs 52% (21/19) | 70% (20/47) vs 46% (30/26) |
-| late phase 2 (110-160 s) | | 82% (6/28) vs 36% (16/9) |
+| 3 | 60% (9/6) vs 43% (3/4) | 12% (7/1) vs 40% (12/8) |
+| 4 | 92% (11/1) vs 67% (4/2) | 74% (8/23) vs 29% (17/7) |
+| pooled | 71% (39/16) vs 53% (28/25) | 67% (35/71) vs 41% (59/41) |
+| late phase 2 (110-160 s) | | 75% (13/40) vs 36% (32/18) |
 
-- The control sits at chance (52% in phase 1, 46% in phase 2). The learned valence follows the contingency in all three seeds (before the flip A +0.54 to +0.75 and B -0.11 to -0.30; at the end A -0.08 to -0.23 and B +0.56 to +0.72). Right after the flip learning flies still visit A (36% at B in 60-80 s, then 55%, then 80% or more), so relearning takes about 40 to 50 s.
-- Learning and control found sources equally often (95 and 96 visits). Time outside the box was 0.0% to 0.3%, furthest 26.2 mm against the 25 mm wall.
-- Evidence is moderate: in phase 2 the gap is large in seed 2 but small in seeds 0 and 1 (72% vs 62%, 46% vs 38%), seed 2 goes the other way in phase 1 (8 and 10 visits), and 20 s bins are noisy (the control moved between 27% and 82% at A before the flip with no learning). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted.
+- The control shows a mild bias toward A (53% at A in phase 1, 41% at B in phase 2), consistent with its naive valence (A +0.10, B +0.06), so learning should be compared with the control and not with 50%.
+- The learned valence follows the contingency: at the end A is -0.08 to -0.29 in all five seeds, and B is +0.56 to +0.72 in four seeds and +0.02 in seed 3. Learning and control found sources equally often (161 and 153 visits). Time outside the box was 0.0% to 0.4%, furthest 26.2 mm against the 25 mm wall.
+- Right after the flip learning flies are not better than the control (first 20 s: 2 of 5 seeds, pooled 46% vs 46%): they still carry the old preference. In the last 20 s before the flip learning is ahead in 4 of the 4 seeds where the control had visits, and in late phase 2 in 4 of 5 seeds.
+- Seed 3 did not relearn: after the flip 7 of its 8 visits went to A and 1 to B, so B was rewarded once and its valence ended at +0.02. This is consistent with reward arriving only on chance visits; it is one seed.
+- Evidence is moderate. 20 s bins are noisy (in the first 20 s, when both groups are still naive, pooled shares were 50% vs 32%; in 20-40 s 71% vs 80%). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted. Five seeds, one odour pair, and parameters chosen in earlier runs.
 
 ## Not done: flight
 
