@@ -209,7 +209,7 @@ def plot(path, visits):
 
 
 import json
-SEEDS = [0, 1, 2]
+SEEDS = [0, 1, 2, 3, 4]
 Path("results").mkdir(exist_ok=True)
 for sd in SEEDS:
     for learn in (True, False):
