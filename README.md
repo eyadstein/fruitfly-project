@@ -141,23 +141,22 @@ The no-learning control (runs 1 and 2, same trial sequence, fixed weights) reach
 
 ## Capstone: cage, odours and learning in one run
 
-`flysim/capstone.py` runs one continuous 100 s episode in a 50 mm box with no resets. Odours A and B sit at random positions at least 10 mm apart. Coming within 6 mm of a source counts as a visit: it triggers the KC to MBON learning rule (valence-faithful MBON groups, 10% recovery per visit) and respawns that source elsewhere. A is rewarded and B punished until 40 s, then the contingency is flipped. Steering uses the learned approach drive read at the two antennae, and a wall rule turns her toward the centre when she is within 6 mm of an edge. The no-learning control uses the same seed with weights frozen at their naive values. The whole-brain rate model is not in this loop (its steering turned out to be lateralisation), so the learned circuit is the real KC to MBON connectivity only. A 100 s run takes about 13 minutes.
+`flysim/capstone.py` and its variants run one continuous episode in a 50 mm box with no resets. Odours A and B sit at random positions at least 10 mm apart. Coming within 6 mm of a source counts as a visit: it triggers the KC to MBON learning rule (valence-faithful MBON groups, 10% recovery toward the naive weights on every visit) and respawns that source elsewhere. A is rewarded and B punished until the flip, then the contingency is reversed. Steering uses the learned approach drive read at the two antennae, and a wall rule turns her toward the centre when she is within 6 mm of an edge. The no-learning control uses the same seed with weights frozen at their naive values. The whole-brain rate model is not in this loop (its steering turned out to be lateralisation), so the learned circuit is the real KC to MBON connectivity only. A 160 s episode takes about 21 minutes.
 
-| | Phase 1 (0-40 s, A rewarded) | Phase 2 (40-100 s, B rewarded) |
+### First attempt (one 100 s run, flip at 40 s)
+
+| | Phase 1 (A rewarded) | Phase 2 (B rewarded) |
 |---|---|---|
 | With learning | 4 visits (2 A, 2 B), 50% at A | 17 visits (4 A, 13 B), 76% at B |
 | No-learning control | 7 visits (3 A, 4 B), 43% at A | 12 visits (5 A, 7 B), 58% at B |
 
 ![Capstone run](figures/capstone.png)
 
-- Everything ran together: she stayed in the box (0.4% of the time outside for under 1 mm, furthest 25.7 mm against the 25 mm wall; control 0.0%, 24.9 mm) and found sources about once every 5 s with or without learning (21 and 19 visits).
-- The learned valence follows the contingency: A rises to about +0.4 after rewarded visits and falls to about -0.1 after the flip; B falls to about -0.26 after punished visits, then rises to about +0.7 over the 17 visits after the flip.
-- Behavioural evidence is weak: only 4 visits happened before the flip, and 13 of 17 phase-2 visits at B against 7 of 12 in the control is well within chance at these counts. One run, one seed per condition.
-- Caveats: the wall is a rule in the controller (small excursions occurred), sources respawn at random positions, and the learning parameters are the ones chosen in the earlier runs.
+She stayed in the box (0.4% of the time outside, furthest 25.7 mm against the 25 mm wall; control 0.0%, 24.9 mm) and found sources about once every 5 s with or without learning. Behavioural evidence was weak (4 visits before the flip), so the run was repeated with several seeds.
 
-### Capstone, multi-seed (5 seeds, 160 s episodes, flip at 60 s)
+### Seeds 0-4 (160 s episodes, flip at 60 s)
 
-The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repeats the capstone for seeds 0 to 4, each with a learning run and a no-learning control (160 s episodes, flip at 60 s, same 50 mm box). Each episode is saved under `results/`; `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. The criterion was fixed before the runs: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in a majority of seeds (written as 2 of 3 seeds for the first three seeds and extended to a majority of 5 before seeds 3 and 4 were run; the result also holds under at least 4 of 5). Outcome: met, with 4 of 5 seeds in the right direction in each phase.
+`flysim/capstone_multi.py` runs each seed with a learning run and a control; every episode is saved under `results/`, and `flysim/capstone_summary.py` and `flysim/capstone_extra.py` summarise them. Criterion fixed before the runs: learning has a higher share of visits at the rewarded odour than the control in both phases pooled, with the direction holding in a majority of seeds (written as 2 of 3 for the first three seeds and extended to a majority of 5 before seeds 3 and 4 were run; it also holds under at least 4 of 5). Outcome: met, with 4 of 5 seeds in the right direction in each phase.
 
 | Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
 |---|---|---|
@@ -169,15 +168,16 @@ The single 100 s run above was a first attempt. `flysim/capstone_multi.py` repea
 | pooled | 71% (39/16) vs 53% (28/25) | 67% (35/71) vs 41% (59/41) |
 | late phase 2 (110-160 s) | | 75% (13/40) vs 36% (32/18) |
 
-- The control shows a mild bias toward A (53% at A in phase 1, 41% at B in phase 2), consistent with its naive valence (A +0.10, B +0.06), so learning should be compared with the control and not with 50%.
+![Seed 0 learning run](figures/capstone_long_seed0.png)
+
+- The control shows a mild bias toward A (53% at A in phase 1, 41% at B in phase 2), consistent with its naive valence (A +0.10, B +0.06), so learning is compared with the control and not with 50%.
 - The learned valence follows the contingency: at the end A is -0.08 to -0.29 in all five seeds, and B is +0.56 to +0.72 in four seeds and +0.02 in seed 3. Learning and control found sources equally often (161 and 153 visits). Time outside the box was 0.0% to 0.4%, furthest 26.2 mm against the 25 mm wall.
-- Right after the flip learning flies are not better than the control (first 20 s: 2 of 5 seeds, pooled 46% vs 46%): they still carry the old preference. In the last 20 s before the flip learning is ahead in 4 of the 4 seeds where the control had visits, and in late phase 2 in 4 of 5 seeds.
-- Seed 3 did not relearn: after the flip 7 of its 8 visits went to A and 1 to B, so B was rewarded once and its valence ended at +0.02. This is consistent with reward arriving only on chance visits; it is one seed.
-- Evidence is moderate. 20 s bins are noisy (in the first 20 s, when both groups are still naive, pooled shares were 50% vs 32%; in 20-40 s 71% vs 80%). Pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted. Five seeds, one odour pair, and parameters chosen in earlier runs.
+- Right after the flip learning flies are not better than the control (first 20 s: 2 of 5 seeds, pooled 46% vs 46%): they still carry the old preference. In late phase 2 learning is ahead in 4 of 5 seeds.
+- Evidence is moderate: 20 s bins are noisy (in the first 20 s, when both groups are naive, pooled shares were 50% vs 32%; in 20-40 s 71% vs 80%), and pooled shares treat visits as independent although each seed is one continuous run, so no p-values are quoted.
 
-#### Time-based recovery (post hoc, criterion not met)
+### Time-based recovery (post hoc; criterion not met)
 
-Seed 3 did not relearn (see above). I proposed a possible cause after seeing it: recovery of depressed synapses happened only on visits, so a fly that stops visiting a source cannot regain interest in it. I added time-based recovery (depressed weights drift back to their naive values with a 30 s time constant, the only value tried) and reran the five learning episodes (`flysim/capstone_decay.py`, `results/capstone_decay_seed*_learn.json`; controls reused, since their weights are frozen). Criterion fixed before the runs: late-phase (110-160 s) share at B of at least 60% with at least 5 visits in all 5 seeds, and pooled phase-1 share at A of at least 65%. Outcome: **not met**. Four of 5 seeds passed; seed 3 reached 50% on 6 visits. The pooled phase-1 condition passed narrowly (66%, 40 of 61 visits).
+Seed 3 did not relearn. After seeing it I proposed that recovery happened only on visits, and added time-based recovery (depressed weights drift back to their naive values with a 30 s time constant, the only value tried), rerunning the five learning episodes (`flysim/capstone_decay.py`, `results/capstone_decay_seed*_learn.json`; controls reused). Criterion fixed before the runs: late-phase share at B of at least 60% with at least 5 visits in all 5 seeds, and pooled phase-1 share at A of at least 65%. Outcome: **not met**. Four of 5 seeds passed (seed 3 reached 50% on 6 visits); the pooled phase-1 condition passed narrowly (66%, 40 of 61 visits).
 
 | Seed | Phase 2, share at B: no-decay / time-decay / control | Late phase, share at B: no-decay / time-decay / control |
 |---|---|---|
@@ -188,13 +188,11 @@ Seed 3 did not relearn (see above). I proposed a possible cause after seeing it:
 | 4 | 74% / 50% / 29% | 75% / 60% / 18% |
 | pooled | 67% / 67% / 41% | 75% / 73% / 36% |
 
-- Pooled results are the same with and without time decay, so it neither helps nor hurts overall. Seed 3 improved (B valence at the end +0.02 to +0.31) and seed 4 got worse (phase 2 at B 74% to 50%); per-seed differences between the two versions are mostly different random trajectories, since runs diverge once the learned values differ. The decay shrinks the learned values (end valence of B +0.31 to +0.59 against +0.56 to +0.72 without it, apart from seed 3).
-- The comparison with controls replicates: time-decay learning is ahead of its control in phase 2 in 5 of 5 seeds (seed 3 only slightly) and pooled 67% vs 41%.
-- Whether the stuck dynamic explains seed 3 remains untested. This change was chosen after seeing seed 3, so the no-decay five-seed result remains the primary one.
+Pooled results are the same with and without time decay. Per-seed differences between the two versions are mostly different random trajectories, since runs diverge once the learned values differ. The comparison with the controls replicated (time-decay learning ahead in phase 2 in 5 of 5 seeds, pooled 67% vs 41%). The rationale for this variant was later not supported (see the last subsection), and the no-decay result remains the primary one.
 
 ### Held-out replication (seeds 5-9)
 
-Seeds 0-4 were used while the experiment was being developed, so the capstone was rerun without changes (same code and parameters, no time decay) on five fresh seeds (`flysim/capstone_holdout.py`, `flysim/capstone_holdout_summary.py`, `results/capstone_seed5..9_*.json`). Criterion fixed before the runs: learning is ahead of the control in pooled share of visits at the rewarded odour in both phases (phase 1 share at A, phase 2 share at B), and ahead in at least 3 of 5 seeds in each phase. Outcome: **met**, with the stricter reading (at least 4 of 5 in both phases) not holding.
+Seeds 0-4 were used while the experiment was being developed, so the capstone was rerun without changes (same code and parameters, no time decay) on five fresh seeds (`flysim/capstone_holdout.py`, `flysim/capstone_holdout_summary.py`). Criterion fixed before the runs: learning ahead of the control in pooled share at the rewarded odour in both phases, and ahead in at least 3 of 5 seeds in each phase. Outcome: **met**, with the stricter reading (at least 4 of 5 in both phases) not holding.
 
 | Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
 |---|---|---|
@@ -205,11 +203,30 @@ Seeds 0-4 were used while the experiment was being developed, so the capstone wa
 | 9 | 76% (13/4) vs 43% (3/4) | 18% (9/2) vs 45% (12/10) |
 | pooled | 80% (67/17) vs 39% (20/31) | 59% (45/65) vs 50% (53/52) |
 
-- Phase 1 replicates strongly (5 of 5 seeds, gap larger than in seeds 0-4). Phase 2 replicates weakly: 3 of 5 seeds, pooled gap of 9 points on 110 and 105 visits, against 26 points in seeds 0-4. Late phase 2 (110-160 s, not part of the criterion): 75% (16/47) vs 52% (26/28), learning ahead in 4 of 5 seeds, against 75% vs 36% in seeds 0-4 (the learning share is unchanged; the control share is higher).
-- Seed 9 did not relearn (9 visits to A and 2 to B after the flip, end valence of B +0.22), as seed 3 in the first set; two of ten learning runs got stuck after the flip. Seed 8 sat at 50% in phase 2 and reached 64% late.
-- The control share varies between seed sets (phase 1 at A: 53% in seeds 0-4, 39% in seeds 5-9). Learning flies made more visits (194 vs 156 here, 355 vs 309 over ten seeds); not investigated.
-- The fly stayed in the box (0.0% to 0.3% of the time outside, furthest 25.9 mm against the 25 mm wall). Learned valences end with A at -0.09 to -0.40 and B at +0.50 to +0.72 (seed 9: +0.22).
+- Phase 1 replicates strongly (5 of 5 seeds, a larger gap than in seeds 0-4). Phase 2 replicates weakly: 3 of 5 seeds and a 9 point pooled gap on 110 and 105 visits, against 26 points in seeds 0-4. Late phase 2 (not part of the criterion): 75% (16/47) vs 52% (26/28), learning ahead in 4 of 5 seeds; the learning share is unchanged from seeds 0-4 and the control share is higher.
+- The control share varies between seed sets (phase 1 at A: 53% in seeds 0-4, 39% in seeds 5-9). Learning flies made more visits (194 vs 156 here, 355 vs 309 over ten seeds); not investigated. The fly stayed in the box (0.0% to 0.3% of the time outside, furthest 25.9 mm).
 - All ten seeds, descriptive only (seeds 0-4 informed the design): phase 1 at A 76% (106/33) vs 46% (48/56), phase 2 at B 63% (80/136) vs 45% (112/93), late phase 2 at B 75% (87/116) vs 44% (46/104); learning ahead in 9 of 10 seeds in phase 1, 7 of 10 in phase 2, 8 of 10 in the late phase.
+
+### The two runs that did not relearn (seeds 3 and 9)
+
+Post-flip visit logs of the ten no-decay learning runs (`flysim/stuck_analysis.py`):
+
+| Seed | Visits A/B after the flip | First B visit | End valence of B | B share from the visit where B overtook A (that visit included) |
+|---|---|---|---|---|
+| 0 | 8/21 | 10 s | +0.67 | 21/26 |
+| 1 | 7/6 | 42 s | +0.56 | 6/9 |
+| 2 | 5/20 | 16 s | +0.72 | 18/21 |
+| 3 | 7/1 | 36 s | +0.02 | 1/4 |
+| 4 | 8/23 | 1 s | +0.65 | 21/28 |
+| 5 | 10/21 | 30 s | +0.72 | 21/27 |
+| 6 | 8/15 | 10 s | +0.50 | 14/19 |
+| 7 | 7/16 | 2 s | +0.71 | 15/19 |
+| 8 | 11/11 | 25 s | +0.58 | 11/18 |
+| 9 | 9/2 | 27 s | +0.22 | 2/7 |
+
+- The two stuck runs are the only ones with 2 or fewer B visits after the flip. A late first B visit does not predict failure (seeds 1, 5 and 8 first reached B at 42, 30 and 25 s and recovered). In both stuck runs B overtook A at their first B visit, but they went to B in only 1 of 4 and 2 of 7 visits from there, against 61% to 86% in the other eight (11 visits, too few to separate chance from a mechanism).
+- Replaying each run's visit sequence through the learning rule (`flysim/erosion_check.py`) reproduces the logged valences exactly (largest error 0.0000). The end valence of B depends on the number of B rewards: 1 visit gives +0.02, 2 give +0.22, 6 give +0.56, 11 give +0.58, 15 to 23 give +0.50 to +0.72, so it saturates after about six rewards.
+- Two explanations proposed after the fact were not supported: that recovery only on visits keeps a fly from regaining interest in B (the stuck runs did visit B, and time-based recovery did not rescue them), and that later A visits wear down a B reward. Moving all B visits last raised the end valence of B by only 0.05 and 0.06 in seeds 3 and 9 (criterion: at least 0.15 in both), although it helped where A visits followed the last B visit (seed 6 +0.25, seed 8 +0.14). The stuck runs got too few B rewards; why they met B so rarely was not determined, and no further learning variants were run.
 
 ## Not done: flight
 
