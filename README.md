@@ -10,7 +10,7 @@ A project that starts from two fruit-fly-inspired algorithms (FlyHash similarity
 4. The specific PN to Kenyon-cell pairing in the real connectome never beat a degree-preserving shuffle in any test (FlyHash recall, text retrieval, steering, odour discrimination). Sparse expansion with winner-take-all, and how evenly PNs are used, is what mattered.
 5. A whole-brain connectome rate model placed in the walking loop steers the fly to an odour. A random network with the same hemisphere layout steers equally well, so the steering comes from left/right lateralisation, not from olfactory wiring.
 6. With a mushroom-body learning rule (dopamine-style depression of KC to MBON synapses) the fly learns from her own experience which of two odours is good, and relearns after the reward is flipped (about 16 trials to reverse, against 4 or fewer for the first lesson).
-7. In a continuous 160 s cage episode with two odours and a mid-run reward flip, learning flies make 75% of their late-phase visits to the rewarded odour against 36% for no-learning controls (5 seeds; 4 of 5 in the right direction, one seed did not relearn).
+7. In a continuous 160 s cage episode with two odours and a mid-run reward flip, learning flies make more of their visits to the rewarded odour than no-learning controls: before the flip 71% vs 53% (seeds 0-4) and 80% vs 39% in a held-out replication (seeds 5-9, 5 of 5 seeds); after the flip 67% vs 41% and 59% vs 50% (4 of 5 and 3 of 5 seeds), so the post-flip effect is weaker and less certain; two of ten learning runs (seeds 3 and 9) did not relearn.
 
 ## Repository layout
 
@@ -191,6 +191,25 @@ Seed 3 did not relearn (see above). I proposed a possible cause after seeing it:
 - Pooled results are the same with and without time decay, so it neither helps nor hurts overall. Seed 3 improved (B valence at the end +0.02 to +0.31) and seed 4 got worse (phase 2 at B 74% to 50%); per-seed differences between the two versions are mostly different random trajectories, since runs diverge once the learned values differ. The decay shrinks the learned values (end valence of B +0.31 to +0.59 against +0.56 to +0.72 without it, apart from seed 3).
 - The comparison with controls replicates: time-decay learning is ahead of its control in phase 2 in 5 of 5 seeds (seed 3 only slightly) and pooled 67% vs 41%.
 - Whether the stuck dynamic explains seed 3 remains untested. This change was chosen after seeing seed 3, so the no-decay five-seed result remains the primary one.
+
+### Held-out replication (seeds 5-9)
+
+Seeds 0-4 were used while the experiment was being developed, so the capstone was rerun without changes (same code and parameters, no time decay) on five fresh seeds (`flysim/capstone_holdout.py`, `flysim/capstone_holdout_summary.py`, `results/capstone_seed5..9_*.json`). Criterion fixed before the runs: learning is ahead of the control in pooled share of visits at the rewarded odour in both phases (phase 1 share at A, phase 2 share at B), and ahead in at least 3 of 5 seeds in each phase. Outcome: **met**, with the stricter reading (at least 4 of 5 in both phases) not holding.
+
+| Seed | Phase 1, share at A: learning vs control | Phase 2, share at B: learning vs control |
+|---|---|---|
+| 5 | 67% (6/3) vs 33% (2/4) | 68% (10/21) vs 47% (10/9) |
+| 6 | 77% (10/3) vs 38% (5/8) | 65% (8/15) vs 46% (13/11) |
+| 7 | 92% (23/2) vs 38% (5/8) | 70% (7/16) vs 57% (9/12) |
+| 8 | 75% (15/5) vs 42% (5/7) | 50% (11/11) vs 53% (9/10) |
+| 9 | 76% (13/4) vs 43% (3/4) | 18% (9/2) vs 45% (12/10) |
+| pooled | 80% (67/17) vs 39% (20/31) | 59% (45/65) vs 50% (53/52) |
+
+- Phase 1 replicates strongly (5 of 5 seeds, gap larger than in seeds 0-4). Phase 2 replicates weakly: 3 of 5 seeds, pooled gap of 9 points on 110 and 105 visits, against 26 points in seeds 0-4. Late phase 2 (110-160 s, not part of the criterion): 75% (16/47) vs 52% (26/28), learning ahead in 4 of 5 seeds, against 75% vs 36% in seeds 0-4 (the learning share is unchanged; the control share is higher).
+- Seed 9 did not relearn (9 visits to A and 2 to B after the flip, end valence of B +0.22), as seed 3 in the first set; two of ten learning runs got stuck after the flip. Seed 8 sat at 50% in phase 2 and reached 64% late.
+- The control share varies between seed sets (phase 1 at A: 53% in seeds 0-4, 39% in seeds 5-9). Learning flies made more visits (194 vs 156 here, 355 vs 309 over ten seeds); not investigated.
+- The fly stayed in the box (0.0% to 0.3% of the time outside, furthest 25.9 mm against the 25 mm wall). Learned valences end with A at -0.09 to -0.40 and B at +0.50 to +0.72 (seed 9: +0.22).
+- All ten seeds, descriptive only (seeds 0-4 informed the design): phase 1 at A 76% (106/33) vs 46% (48/56), phase 2 at B 63% (80/136) vs 45% (112/93), late phase 2 at B 75% (87/116) vs 44% (46/104); learning ahead in 9 of 10 seeds in phase 1, 7 of 10 in phase 2, 8 of 10 in the late phase.
 
 ## Not done: flight
 
