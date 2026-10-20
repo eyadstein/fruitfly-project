@@ -1,6 +1,6 @@
 # Fruit Fly Toolkit
 
-A project that starts from two fruit-fly-inspired algorithms (FlyHash similarity search and the Fruit Fly Optimization Algorithm), then connects them to the real FlyWire connectome and to a simulated fly body (NeuroMechFly, via FlyGym 2.1.0). In simulation the fly walks inside a cage, is steered toward an odour by a connectome-based brain model, and learns from experience with a mushroom-body learning rule. **She walks; she does not fly** (see Limits).
+A project that starts from two fruit-fly-inspired algorithms (FlyHash similarity search and the Fruit Fly Optimization Algorithm), then connects them to the real FlyWire connectome and to a simulated fly body (NeuroMechFly, via FlyGym 2.1.0). In simulation the fly walks inside a cage, is steered toward an odour by a connectome-based brain model, and learns from experience with a mushroom-body learning rule. **Her own body walks and does not fly; flight was only reproduced from a third-party controller on a different body** (see Flight).
 
 ## Main findings
 
@@ -228,9 +228,22 @@ Post-flip visit logs of the ten no-decay learning runs (`flysim/stuck_analysis.p
 - Replaying each run's visit sequence through the learning rule (`flysim/erosion_check.py`) reproduces the logged valences exactly (largest error 0.0000). The end valence of B depends on the number of B rewards: 1 visit gives +0.02, 2 give +0.22, 6 give +0.56, 11 give +0.58, 15 to 23 give +0.50 to +0.72, so it saturates after about six rewards.
 - Two explanations proposed after the fact were not supported: that recovery only on visits keeps a fly from regaining interest in B (the stuck runs did visit B, and time-based recovery did not rescue them), and that later A visits wear down a B reward. Moving all B visits last raised the end valence of B by only 0.05 and 0.06 in seeds 3 and 9 (criterion: at least 0.15 in both), although it helped where A visits followed the last B visit (seed 6 +0.25, seed 8 +0.14). The stuck runs got too few B rewards; why they met B so rarely was not determined, and no further learning variants were run.
 
-## Not done: flight
+## Flight (reproduced from a third-party repository; not our own result)
 
-The NeuroMechFly walking body has no wing flight. The flybody model (DeepMind/Janelia) has wings and installs and renders on Windows, but its repository ships no trained flight policy and points to a distributed reinforcement-learning training script that needs Linux and a TensorFlow stack. Flight would mean training a flight controller from scratch, which was not attempted.
+The NeuroMechFly walking body used everywhere above has no wing flight, so flight was tried on a different body, the flybody model (DeepMind/Janelia, Nature 2025). An earlier version of this README said the flybody repository ships no trained flight policy and that flight would need training from scratch. That was incomplete: the paper's data record on Figshare (article 25309105) lists trained policies (trained-fly-policies.zip, 6.5 MB), flight-controller reuse checkpoints (32 MB) and the flight imitation dataset (12.9 MB), and a third-party project (zozo123/fly-fruit-fly, commit 6f4695f; cloned into `superfly/`, which is git-ignored and not part of this repository) builds on the released expert.
+
+What was run: `superfly evaluate` on that project's committed connectome student, a small recurrent network whose recurrent matrix is a fixed sparse wiring taken from a 256-node subgraph of the BANC brain-and-nerve-cord connectome, with learned sensory, dynamics and motor layers. Task: straight flight at 20 cm/s from an airborne start at 1 cm height, reference duration 0.6 s, 10 episodes (seeds 80000-80009), on Windows with Python 3.11 on CPU.
+
+| Seeds | Outcome | Duration | Mean tracking error |
+|---|---|---|---|
+| 80001, 80002, 80006, 80008, 80009 | completed the reference | 0.599 s | 0.026 to 0.027 cm |
+| 80000, 80003, 80004, 80005, 80007 | failed | 0.112 to 0.148 s | 0.19 to 0.21 cm (final height about 0.21 cm) |
+
+- Pass rate 5 of 10, mean duration 0.361 s, mean tracking error 0.1114 cm (the project's README reports 0.1121 cm; the small difference was not investigated). The project's own gate (at least 90% of episodes lasting 0.59 s with mean error at most 0.1 cm) is not met.
+- Outcomes are two-sided: a full 0.6 s flight with error close to the released expert's reported 0.027 cm, or a crash within 0.15 s. Seeds 80000 and 80005 give identical results, consistent with the project's note that some seeds share an initial wingbeat phase; which phases fail was not examined.
+- The released expert's result (10 of 10, 598.8 ms) is the project's own number and was not rerun here. Its docs also contain an older table (0 of 10) for an earlier student.
+- Scope: straight flight started airborne, no takeoff, steering, cage or learning, as the project itself states. The wiring is a structural prior from a different connectome than the FAFB one used above; neurotransmitter signs and real neural dynamics are not modelled, and the project reports no shuffled-wiring comparison.
+- This is a reproduction of someone else's code on one machine. Its source was spot-checked only: the data downloads come from Figshare and a Google Cloud bucket, ffmpeg is called for movies, and nothing else was found, but this was not a security audit.
 
 ## Limits and caveats
 
